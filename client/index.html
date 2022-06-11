@@ -4,11 +4,48 @@
 	<title>Empty App</title>
 </head>
 <body>
-  <h1>Greenworks Test</h1>
-  SteamAPI Init:
-  <script>
-    var greenworks = require('./greenworks');
-    document.write(greenworks.init());
-  </script>
+	<h1>Greenworks Test</h1>
+	SteamAPI Init:
+	<script>
+		const greenworks = require('./greenworks');
+		const os = require('os');
+		document.write(greenworks.init());
+
+		function startSteamAPISession(callback) {
+			try {
+				if (!greenworks) {
+					console.log('Greenworks not support for ' + os.platform() + ' platform');
+				} else {
+					if (!greenworks.init()) {
+						console.log('Error on initializing steam API.');
+					} else {
+						console.log('Steam API initialized successfully.');
+
+						callback(os, greenworks);
+					}
+				}
+			} catch(err) {
+				console.error('Error catched:', err);
+			}
+		}
+
+		function getSteamUsername() {
+			return new Promise((resolve, reject) => {
+				startSteamAPISession((os, greenworks) => {
+					let nickname = greenworks.getSteamId().getNickname();
+
+					if(!nickname || nickname === '') {
+						nickname = greenworks.getSteamId().getPersonaName();
+					}
+
+					resolve(nickname);
+				});
+			});
+		};
+
+		(async() => {
+			console.log(await getSteamUsername());
+		})();
+	</script>
 </body>
 </html>
